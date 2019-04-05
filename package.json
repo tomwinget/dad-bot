@@ -4,7 +4,8 @@
   "description": "Dad bot",
   "main": "dadbot.js",
   "scripts": {
-    "test": "ping"
+    "test": "ping",
+    "start": "node dadbot.js"
   },
   "author": "",
   "license": "MIT",
@@ -12,6 +13,7 @@
     "discord.js": "^11.4.2"
   },
   "dependencies": {
-    "discord": "^0.8.2"
+    "discord": "^0.8.2",
+    "discord.js": "^11.4.2"
   }
 }
