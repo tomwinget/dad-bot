@@ -1,0 +1,17 @@
+{
+  "name": "dadbot",
+  "version": "1.0.0",
+  "description": "Dad bot",
+  "main": "dadbot.js",
+  "scripts": {
+    "test": "ping"
+  },
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "discord.js": "^11.4.2"
+  },
+  "dependencies": {
+    "discord": "^0.8.2"
+  }
+}
