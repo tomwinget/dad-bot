@@ -4,7 +4,7 @@ const token = process.env.token;
 
 client.on('ready', () => {console.log('Dad bot reporting for duty');});
 
-var dadPattern = /^(?:i'm|im|i am) ?a? ([^\.\,\n]*)/i
+var dadPattern = /^(?:i’m|i'm|im|i am) ?a? ([^\.\,\n]*)/i
 
 client.on('message', message => {
     if (message.author.bot) return;
