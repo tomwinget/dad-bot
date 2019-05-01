@@ -13,7 +13,7 @@
     "discord.js": "^11.4.2"
   },
   "dependencies": {
-    "discord": "^0.8.2",
+    "child_process": "^1.0.2",
     "discord.js": "^11.4.2"
   }
 }
