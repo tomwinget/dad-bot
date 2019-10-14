@@ -6,7 +6,7 @@ const token = process.env.dadToken;
 client.on('ready', () => {console.log('Dad bot reporting for duty');});
 
 var dadPattern = /^(?:i’m|i'm|im|i am) ?a? ([^\.\,\n]*)/i;
-var alphaPattern = /^[^a-z]+$/i;
+var alphaPattern = /^(\D+?\s+\D+?)+$/i;
 
 client.on('message', message => {
     if (message.author.bot) return;
@@ -29,8 +29,7 @@ client.on('message', message => {
     }
 
     var alpha = messageContent.match(alphaPattern);
-    if (!alpha && messageContent.length > 0 && messageContent === messageContent.toUpperCase()
-        && messageContent != "LOL" && messageContent != "LMAO"){
+    if (alpha && messageContent === messageContent.toUpperCase()){
         let user = message.author;
         var loudMessages = [`Now calm down ${user}!`, `No yelling in the house
             ${user}!`, `Lower your voice ${user}!`, `You're being too loud ${user}!`];
