@@ -6,15 +6,14 @@ import discord
 
 TOKEN = os.environ['dadToken']
 client = discord.Client()
-client.login(TOKEN)
 
 dadPattern = r"^(?:i’m|i'm|im|i am) ?a? ([^\.\,\n]*)"
 alphaPattern = r"^(\D+?\s+\D+?)+$"
 loudMessages = [
-    'Now calm down {user}!',
-    'No yelling in the house {user}!',
-    'Lower your voice {user}!',
-    'You\'re being too loud {user}!'
+    'Now calm down {}!',
+    'No yelling in the house {}!',
+    'Lower your voice {}!',
+    'You\'re being too loud {}!'
 ]
 
 
@@ -37,15 +36,18 @@ async def on_message(message: discord.Message) -> None:
     if message.author.bot:
         return
 
-    if client.mentioned_in(message):
-        message.channel.send(get_joke)
+    if client.user in message.mentions:
+        await message.channel.send(get_joke())
+    
+    groups = re.match(dadPattern, message.content, re.IGNORECASE)
+    if groups:
+        await message.channel.send(f'Hi {groups.group(1)}, I\'m Dadbot!')
+        await message.author.edit(nick=groups.group(1)[:32])
 
-    if re.match(dadPattern, message.content):
-        message.channel.send(f'Hi {message.author.name}, I\'m Dadbot!')
-        message.author.edit(nick=message.content[:32])
-
-    if re.match(alphaPattern, message.content) \
+    if re.match(alphaPattern, message.content, re.IGNORECASE) \
        and message.content == message.content.upper():
         i = random.randint(0, len(loudMessages))
-        msg = loudMessages[i].format(message.author.name)
-        message.channel.send(msg)
+        msg = loudMessages[i-1].format(message.author.name)
+        await message.channel.send(msg)
+
+client.run(TOKEN)
