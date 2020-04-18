@@ -8,6 +8,7 @@ import random
 import requests
 import logging
 import discord
+import traceback
 
 
 TOKEN = os.environ['dadToken']
@@ -15,8 +16,8 @@ vape_id = 436581339119222785
 client = discord.Client(max_message=None, heartbeat_timeout=30, assume_unsync_clock=True)
 
 
-dadPattern = r"^(?:i’m|i'm|im|i am) ?a? ([\w ]*)"
-alphaPattern = r"^(\w+?\s+\w+?)+$"
+dadPattern = r"^(?:i’m|i'm|im|i am) ?a? ([^\.\,\n]*)"
+alphaPattern = r"^(\w+?\s+\w+?)+"
 loudMessages = [
     'Now calm down {}!',
     'No yelling in the house {}!',
@@ -25,6 +26,9 @@ loudMessages = [
 ]
 common_encoding = 'utf-8'
 
+channel_topic = {
+        'schoolhouse-rock': ['politic','trump','election','biden','president','dems','democrat','republican','cnn','fox']
+        }
 
 logger = logging.getLogger('discord')
 logger.setLevel(logging.DEBUG)
@@ -70,27 +74,46 @@ async def on_message(message):
         logger.info("boommering on %s", str(message.author))
         await message.channel.send("Hey that's our word!!")
 
-
     logger.info("Checking for dadding")
     groups = re.search(dadPattern, str(message.content), re.IGNORECASE)
     if groups:
         logger.info("dading on %s", str(message.author))
-        await message.channel.send(f'Hi {groups.group(1)}, I\'m Dadbot!')
-        await message.author.edit(nick=groups.group(1)[:32])
+        if len(message.mentions) >= 1:
+            await message.author.edit(nick=f'Totally not {message.mentions[0].display_name[:20]}')
+            await message.channel.send(f'Hi totally not {message.author.mention}, I\'m Dadbot!')
+        else:
+            await message.author.edit(nick=groups.group(1)[:32])
+            await message.channel.send(f'Hi {message.author.mention}, I\'m Dadbot!')
 
     logger.info("Checking for yelling")
     if re.search(alphaPattern, str(message.content), re.IGNORECASE) \
        and str(message.content) == str(message.content).upper():
         logger.info("silencing %s", str(message.author))
         i = random.randint(0, len(loudMessages))
-        if message.author.nick:
-            msg = loudMessages[i-1].format(message.author.nick)
-        else:
-            msg = loudMessages[i-1].format(message.author.name)
+        msg = loudMessages[i-1].format(message.author.mention)
         await message.channel.send(msg)
+
+    logger.info("Checking if this is the right channel")
+    for channel, keywords in channel_topic.items():
+        for keyword in keywords:
+            if keyword in str(message.content).lower():
+                chan = [chann for chann in message.guild.channels if chann.name.lower() == channel]
+                logger.info("Found keyword: "+keyword+" and channels: "+str(chan))
+                if chan:
+                    await message.channel.send('Hey {}, I think that belongs in {}'.format(message.author.mention, chan[0].mention))
+                else:
+                    await message.channel.send('Hey {}, I think that belongs in {}'.format(message.author.mention, "#"+channel))
+                break
 
     logger.info("done processing")
     return
+
+@client.event
+async def on_error(event, *args, **kwargs):
+    message = args[0]
+    logger.error(traceback.format_exc())
+    logger.error("While processing message: "+str(message))
+    message.channel.send('Boi howdy that last message was a thinker {}'.format(message.author.mention))
 
 @client.event
 async def on_ready():
