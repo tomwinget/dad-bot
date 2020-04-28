@@ -19,7 +19,7 @@ client = discord.Client(max_message=None, heartbeat_timeout=30, assume_unsync_cl
 r_local = redis.StrictRedis(decode_responses=True)
 
 
-dadPattern = r"^(?:i’m|i'm|im|i am) ?a? ([^\.\,\n]*)"
+dadPattern = r"^(?:i’m|i'm|im|i am|imma) ?a? ([^\.\,\n]*)"
 alphaPattern = r"^(\w+?\s+\w+?)+"
 loudMessages = [
     'Now calm down {}!',
@@ -71,6 +71,25 @@ async def on_message(message):
             timedelt = datetime.now() - start_time
             logger.info("Sharing uptime of %s", str(timedelt))
             await message.channel.send("I've been up for "+str(timedelt))
+        elif "score" in str(message.content):
+            num_dads = r_local.hget(USERS_HASH, message.author.id)
+            logger.info("Telling %s they've been dadded %d times")
+            await message.channel.send(f'Hey {message.author.mention}, you\'ve been dadded on {num_dads} times')
+        elif "leaderboard" in str(message.content):
+            logger.info("Sending top 5 dads")
+            total_dads = r_local.hgetall(USERS_HASH)
+            sorted_dads = sorted(total_dads.items(), key=lambda x: x[1], reverse=True)
+            logger.info("Sorted results: "+str(sorted_dads))
+            leaderboard = '```\n --Top 5 Dads: --\n'
+            for index,user_id in enumerate(sorted_dads[:5]):
+                logger.info("getting user: "+str(user_id))
+                logger.info("debug: "+str(user_id[0]))
+                logger.info("debug: "+str(user_id[1]))
+                user = message.guild.get_member(int(user_id[0]))
+                count = user_id[1]
+                leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
+            leaderboard += '```'
+            await message.channel.send(leaderboard)
         else:
             logger.info("joking with %s", str(message.author))
             await message.channel.send(get_joke())
