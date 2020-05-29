@@ -30,6 +30,7 @@ loudMessages = [
 common_encoding = 'utf-8'
 USERS_HASH = "USERS"
 ordinal = lambda n: "%d%s" % (n,"tsnrhtdd"[(math.floor(n/10)%10!=1)*(n%10<4)*n%10::4])
+overlord = 147558756652154881
 
 channel_topic = {
         'schoolhouse-rock': ['politic','trump','election','biden','president','dems','democrat','republican','cnn','fox']
@@ -76,20 +77,46 @@ async def on_message(message):
             logger.info("Telling %s they've been dadded %d times")
             await message.channel.send(f'Hey {message.author.mention}, you\'ve been dadded on {num_dads} times')
         elif "leaderboard" in str(message.content):
-            logger.info("Sending top 5 dads")
-            total_dads = r_local.hgetall(USERS_HASH)
-            sorted_dads = sorted(total_dads.items(), key=lambda x: x[1], reverse=True)
-            logger.info("Sorted results: "+str(sorted_dads))
-            leaderboard = '```\n --Top 5 Dads: --\n'
-            for index,user_id in enumerate(sorted_dads[:5]):
-                logger.info("getting user: "+str(user_id))
-                logger.info("debug: "+str(user_id[0]))
-                logger.info("debug: "+str(user_id[1]))
-                user = message.guild.get_member(int(user_id[0]))
-                count = user_id[1]
-                leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
-            leaderboard += '```'
-            await message.channel.send(leaderboard)
+            all_mentions = message.mentions
+            all_mentions.remove(client.user)
+            if len(all_mentions) > 0:
+                for i in range(len(all_mentions)):
+                    user = all_mentions[i]
+                    dad_count = r_local.hget(USERS_HASH, user.id)
+                    if not dad_count:
+                        dad_count = 0
+                    logger.info("Sending dad for "+user.display_name)
+                    await message.channel.send(f'{user.display_name} has been dadded on {dad_count} times')
+            elif "total" in str(message.content):
+                logger.info("Sending total dads")
+                total_dads = r_local.hgetall(USERS_HASH)
+                sorted_dads = sorted(total_dads.items(), key=lambda x: x[1], reverse=True)
+                logger.info("Sorted results: "+str(sorted_dads))
+                leaderboard = '```\n --Top 5 Dads: --\n'
+                for index,user_id in enumerate(sorted_dads):
+                    logger.info("getting user: "+str(user_id))
+                    logger.info("debug: "+str(user_id[0]))
+                    logger.info("debug: "+str(user_id[1]))
+                    user = message.guild.get_member(int(user_id[0]))
+                    count = user_id[1]
+                    leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
+                leaderboard += '```'
+                await message.channel.send(leaderboard)
+            else:
+                logger.info("Sending top 5 dads")
+                total_dads = r_local.hgetall(USERS_HASH)
+                sorted_dads = sorted(total_dads.items(), key=lambda x: x[1], reverse=True)
+                logger.info("Sorted results: "+str(sorted_dads))
+                leaderboard = '```\n --Top 5 Dads: --\n'
+                for index,user_id in enumerate(sorted_dads[:5]):
+                    logger.info("getting user: "+str(user_id))
+                    logger.info("debug: "+str(user_id[0]))
+                    logger.info("debug: "+str(user_id[1]))
+                    user = message.guild.get_member(int(user_id[0]))
+                    count = user_id[1]
+                    leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
+                leaderboard += '```'
+                await message.channel.send(leaderboard)
         else:
             logger.info("joking with %s", str(message.author))
             await message.channel.send(get_joke())
@@ -104,12 +131,18 @@ async def on_message(message):
         num_dads = ordinal(r_local.hincrby(USERS_HASH, message.author.id, 1))
         logger.info("dading on %s for the %d time", str(message.author), num_dads)
         if len(message.mentions) >= 1:
-            await message.author.edit(nick=f'Totally not {message.mentions[0].display_name[:20]}')
-            await message.channel.send(f'Hi totally not {message.author.mention}, I\'m Dadbot!')
+            if message.author.id != overlord:
+                await message.author.edit(nick=f'Totally not {message.mentions[0].display_name[:20]}')
+                await message.channel.send(f'Hi totally not {message.author.mention}, I\'m Dadbot!')
+            else:
+                await message.channel.send(f'Hi totally not {message.mentions[0]}, I\'m Dadbot!')
             await message.channel.send(f'You\'ve been dadded for the {num_dads} time')
         else:
-            await message.author.edit(nick=groups.group(1)[:32])
-            await message.channel.send(f'Hi {message.author.mention}, I\'m Dadbot!')
+            if message.author.id != overlord:
+                await message.author.edit(nick=groups.group(1)[:32])
+                await message.channel.send(f'Hi {message.author.mention}, I\'m Dadbot!')
+            else:
+                await message.channel.send(f'Hi {groups.group(1)}, I\'m Dadbot!')
             await message.channel.send(f'You\'ve been dadded for the {num_dads} time')
 
     logger.info("Checking for yelling")
