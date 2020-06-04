@@ -90,7 +90,7 @@ async def on_message(message):
             elif "total" in str(message.content):
                 logger.info("Sending total dads")
                 total_dads = r_local.hgetall(USERS_HASH)
-                sorted_dads = sorted(total_dads.items(), key=lambda x: x[1], reverse=True)
+                sorted_dads = sorted(total_dads.items(), key=lambda x: int(x[1]), reverse=True)
                 logger.info("Sorted results: "+str(sorted_dads))
                 leaderboard = '```\n --Top 5 Dads: --\n'
                 for index,user_id in enumerate(sorted_dads):
@@ -105,7 +105,7 @@ async def on_message(message):
             else:
                 logger.info("Sending top 5 dads")
                 total_dads = r_local.hgetall(USERS_HASH)
-                sorted_dads = sorted(total_dads.items(), key=lambda x: x[1], reverse=True)
+                sorted_dads = sorted(total_dads.items(), key=lambda x: int(x[1]), reverse=True)
                 logger.info("Sorted results: "+str(sorted_dads))
                 leaderboard = '```\n --Top 5 Dads: --\n'
                 for index,user_id in enumerate(sorted_dads[:5]):
