@@ -15,7 +15,9 @@ import math
 
 TOKEN = os.environ['dadToken']
 vape_id = 436581339119222785
-client = discord.Client(max_message=None, heartbeat_timeout=30, assume_unsync_clock=True)
+intents = discord.Intents.default()
+intents.members = True
+client = discord.Client(max_message=None, heartbeat_timeout=30, assume_unsync_clock=True, intents=intents)
 r_local = redis.StrictRedis(decode_responses=True)
 
 
@@ -92,14 +94,13 @@ async def on_message(message):
                 total_dads = r_local.hgetall(USERS_HASH)
                 sorted_dads = sorted(total_dads.items(), key=lambda x: int(x[1]), reverse=True)
                 logger.info("Sorted results: "+str(sorted_dads))
-                leaderboard = '```\n --Top 5 Dads: --\n'
+                leaderboard = '```\n --Top Dads: --\n'
                 for index,user_id in enumerate(sorted_dads):
                     logger.info("getting user: "+str(user_id))
-                    logger.info("debug: "+str(user_id[0]))
-                    logger.info("debug: "+str(user_id[1]))
                     user = message.guild.get_member(int(user_id[0]))
                     count = user_id[1]
-                    leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
+                    if user:
+                        leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
                 leaderboard += '```'
                 await message.channel.send(leaderboard)
             else:
@@ -114,7 +115,8 @@ async def on_message(message):
                     logger.info("debug: "+str(user_id[1]))
                     user = message.guild.get_member(int(user_id[0]))
                     count = user_id[1]
-                    leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
+                    if user:
+                        leaderboard += '#'+str(index+1)+'- '+str(user.name)+' with: '+str(count)+' dads\n'
                 leaderboard += '```'
                 await message.channel.send(leaderboard)
         else:
@@ -130,7 +132,7 @@ async def on_message(message):
     if groups:
         num_dads = ordinal(r_local.hincrby(USERS_HASH, message.author.id, 1))
         logger.info("dading on %s for the %d time", str(message.author), num_dads)
-        if len(message.mentions) >= 1:
+        if len(message.mentions) >= 1 and not message.reference:
             if message.author.id != overlord:
                 await message.author.edit(nick=f'Totally not {message.mentions[0].display_name[:20]}')
                 await message.channel.send(f'Hi totally not {message.author.mention}, I\'m Dadbot!')
@@ -160,8 +162,8 @@ async def on_message(message):
                 chan = [chann for chann in message.guild.channels if chann.name.lower() == channel]
                 logger.info("Found keyword: "+keyword+" and channels: "+str(chan))
                 if chan and (channel not in message.channel.name):
-                    await message.channel.send('Hey {}, I think that belongs in {}'.format(message.author.mention, chan[0].mention))
-                break
+                    logger.info("disabled")
+                    # await message.channel.send('Hey {}, I think that belongs in {}'.format(message.author.mention, chan[0].mention))
 
     logger.info("done processing")
     return
