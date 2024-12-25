@@ -134,17 +134,17 @@ async def on_message(message):
         logger.info("dading on %s for the %d time", str(message.author), num_dads)
         if len(message.mentions) >= 1 and not message.reference:
             if message.author.id != overlord:
-                await message.author.edit(nick=f'Totally not {message.mentions[0].display_name[:20]}')
-                await message.channel.send(f'Hi totally not {message.author.mention}, I\'m Dadbot!')
+                # await message.author.edit(nick=f'Totally not {message.mentions[0].display_name[:20]}')
+                await message.channel.send(f'Hi totally not {message.mentions[0].display_name[:20]}, I\'m Dadbot!')
             else:
-                await message.channel.send(f'Hi totally not {message.mentions[0]}, I\'m Dadbot!')
+                await message.channel.send(f'Hi totally not {message.mentions[0].display_name[:20]}, I\'m Dadbot!')
             await message.channel.send(f'You\'ve been dadded for the {num_dads} time')
         else:
             if message.author.id != overlord:
-                await message.author.edit(nick=groups.group(1)[:32])
-                await message.channel.send(f'Hi {message.author.mention}, I\'m Dadbot!')
+                # await message.author.edit(nick=groups.group(1)[:32])
+                await message.channel.send(f'Hi {groups.group(1)[:32]}, I\'m Dadbot!')
             else:
-                await message.channel.send(f'Hi {groups.group(1)}, I\'m Dadbot!')
+                await message.channel.send(f'Hi {groups.group(1)[:32]}, I\'m Dadbot!')
             await message.channel.send(f'You\'ve been dadded for the {num_dads} time')
 
     logger.info("Checking for yelling")
